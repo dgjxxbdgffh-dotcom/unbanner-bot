@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Mass Unban Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert.error {
+            background: #fee;
+            color: #c00;
+            border: 1px solid #fcc;
+        }
+
+        .alert.success {
+            background: #efe;
+            color: #060;
+            border: 1px solid #cfc;
+        }
+
+        .alert.info {
+            background: #eef;
+            color: #006;
+            border: 1px solid #ccf;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 30px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .logs {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .log-entry.success {
+            color: #060;
+        }
+
+        .log-entry.error {
+            color: #c00;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .status-idle {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .status-running {
+            background: #ffeaa7;
+            color: #d63031;
+        }
+
+        .status-completed {
+            background: #55efc4;
+            color: #00b894;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔓 Telegram Mass Unban</h1>
+        <p class="subtitle">Unban all users from your channel</p>
+
+        <div id="alert" class="alert"></div>
+
+        <!-- Login Section -->
+        <div id="loginSection" class="section active">
+            <div class="input-group">
+                <label for="phone">Phone Number (with country code)</label>
+                <input type="tel" id="phone" placeholder="+1234567890" />
+            </div>
+            <button onclick="sendCode()">Send Verification Code</button>
+        </div>
+
+        <!-- Verify Section -->
+        <div id="verifySection" class="section">
+            <div class="input-group">
+                <label for="code">Verification Code</label>
+                <input type="text" id="code" placeholder="12345" />
+            </div>
+            <div class="input-group">
+                <label for="password">2FA Password (if enabled)</label>
+                <input type="password" id="password" placeholder="Optional" />
+            </div>
+            <button onclick="verifyCode()">Login</button>
+        </div>
+
+        <!-- Main Section -->
+        <div id="mainSection" class="section">
+            <div class="input-group">
+                <label for="channel">Channel Username or Link</label>
+                <input type="text" id="channel" placeholder="@mychannel or https://t.me/mychannel" />
+            </div>
+            <button onclick="startUnban()">Start Unbanning</button>
+            
+            <div id="progressContainer" class="progress-container" style="display: none;">
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value" id="totalCount">0</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="unbannedCount">0</div>
+                        <div class="stat-label">Unbanned</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="failedCount">0</div>
+                        <div class="stat-label">Failed</div>
+                    </div>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill">0%</div>
+                </div>
+                
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <span class="status-badge" id="statusBadge">Idle</span>
+                    <div id="currentUser" style="color: #666; font-size: 14px;"></div>
+                </div>
+                
+                <div class="logs" id="logs"></div>
+            </div>
+            
+            <button onclick="logout()" style="margin-top: 20px; background: #e74c3c;">Logout</button>
+        </div>
+    </div>
+
+    <script>
+        let progressInterval = null;
+
+        function showAlert(message, type = 'info') {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert ${type} show`;
+            setTimeout(() => alert.classList.remove('show'), 5000);
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        async function sendCode() {
+            const phone = document.getElementById('phone').value.trim();
+            if (!phone) {
+                showAlert('Please enter your phone number', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/send_code', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({phone})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(data.message, 'success');
+                    showSection('verifySection');
+                } else {
+                    showAlert(data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message, 'error');
+            }
+        }
+
+        async function verifyCode() {
+            const code = document.getElementById('code').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            if (!code) {
+                showAlert('Please enter the verification code', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/verify_code', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({code, password})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(data.message, 'success');
+                    showSection('mainSection');
+                } else if (data.need_password) {
+                    showAlert(data.error, 'info');
+                } else {
+                    showAlert(data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message, 'error');
+            }
+        }
+
+        async function startUnban() {
+            const channel = document.getElementById('channel').value.trim();
+            
+            if (!channel) {
+                showAlert('Please enter a channel', 'error');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to unban ALL users in this channel?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/unban', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({channel})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(data.message, 'success');
+                    document.getElementById('progressContainer').style.display = 'block';
+                    startProgressPolling();
+                } else {
+                    showAlert(data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message, 'error');
+            }
+        }
+
+        function startProgressPolling() {
+            if (progressInterval) clearInterval(progressInterval);
+            
+            progressInterval = setInterval(async () => {
+                try {
+                    const response = await fetch('/api/progress');
+                    const data = await response.json();
+                    
+                    updateProgress(data);
+                    
+                    if (data.status === 'completed' || data.status === 'error') {
+                        clearInterval(progressInterval);
+                    }
+                } catch (error) {
+                    console.error('Error fetching progress:', error);
+                }
+            }, 1000);
+        }
+
+        function updateProgress(data) {
+            document.getElementById('totalCount').textContent = data.total;
+            document.getElementById('unbannedCount').textContent = data.unbanned;
+            document.getElementById('failedCount').textContent = data.failed;
+            
+            const percentage = data.total > 0 ? Math.round((data.unbanned + data.failed) / data.total * 100) : 0;
+            const fill = document.getElementById('progressFill');
+            fill.style.width = percentage + '%';
+            fill.textContent = percentage + '%';
+            
+            const badge = document.getElementById('statusBadge');
+            badge.textContent = data.status.toUpperCase();
+            badge.className = 'status-badge status-' + data.status;
+            
+            document.getElementById('currentUser').textContent = data.current_user || '';
+            
+            const logsDiv = document.getElementById('logs');
+            logsDiv.innerHTML = data.logs.slice(-50).reverse().map(log => {
+                const className = log.includes('✅') ? 'success' : log.includes('❌') ? 'error' : '';
+                return `<div class="log-entry ${className}">${log}</div>`;
+            }).join('');
+        }
+
+        async function logout() {
+            if (!confirm('Are you sure you want to logout?')) return;
+            
+            try {
+                const response = await fetch('/api/logout', {method: 'POST'});
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Logged out successfully', 'success');
+                    showSection('loginSection');
+                } else {
+                    showAlert(data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message, 'error');
+            }
+        }
+
+        // Check login status on load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('/api/check_login');
+                const data = await response.json();
+                
+                if (data.logged_in) {
+                    showSection('mainSection');
+                }
+            } catch (error) {
+                console.error('Error checking login status:', error);
+            }
+        });
+    </script>
+</body>
+</html>
