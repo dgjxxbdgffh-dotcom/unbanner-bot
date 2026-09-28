@@ -3,7 +3,7 @@ services:
     name: telegram-unban-tool
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: hypercorn web_unban:app --bind 0.0.0.0:$PORT
+    startCommand: uvicorn web_unban:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: API_ID
         value: 33325009
