@@ -1,6 +1,6 @@
 import asyncio
 import os
-from aioflask import Flask, render_template, request, jsonify, session
+from quart import Quart, render_template, request, jsonify, session
 from telethon import TelegramClient
 from telethon.tl.functions.channels import GetParticipantsRequest
 from telethon.tl.types import ChannelParticipantsKicked
@@ -20,7 +20,7 @@ API_ID = int(os.environ.get('API_ID', '33325009'))
 API_HASH = os.environ.get('API_HASH', '3ef83055e590c94d0c4572dc094771f4')
 SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
 
-app = Flask(__name__)
+app = Quart(__name__)
 app.secret_key = SECRET_KEY
 
 # Global client instance
