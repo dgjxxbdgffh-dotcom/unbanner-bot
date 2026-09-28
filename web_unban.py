@@ -1,6 +1,6 @@
 import asyncio
 import os
-from flask import Flask, render_template, request, jsonify, session
+from aioflask import Flask, render_template, request, jsonify, session
 from telethon import TelegramClient
 from telethon.tl.functions.channels import GetParticipantsRequest
 from telethon.tl.types import ChannelParticipantsKicked
@@ -55,16 +55,16 @@ async def get_client():
 
 
 @app.route('/')
-def index():
+async def index():
     """Main page"""
-    return render_template('index.html')
+    return await render_template('index.html')
 
 
 @app.route('/api/send_code', methods=['POST'])
 async def send_code():
     """Send verification code to phone"""
     try:
-        data = request.json
+        data = await request.get_json()
         phone = data.get('phone')
         
         if not phone:
@@ -90,7 +90,7 @@ async def send_code():
 async def verify_code():
     """Verify the code and login"""
     try:
-        data = request.json
+        data = await request.get_json()
         code = data.get('code')
         password = data.get('password', '')
         
@@ -146,7 +146,7 @@ async def start_unban():
     global unban_progress
     
     try:
-        data = request.json
+        data = await request.get_json()
         channel_input = data.get('channel')
         
         if not channel_input:
@@ -271,7 +271,7 @@ async def unban_process(channel_input):
 
 
 @app.route('/api/progress', methods=['GET'])
-def get_progress():
+async def get_progress():
     """Get current progress"""
     return jsonify(unban_progress)
 
@@ -292,10 +292,5 @@ async def logout():
 
 
 if __name__ == '__main__':
-    from hypercorn.config import Config
-    from hypercorn.asyncio import serve
-    
-    config = Config()
-    config.bind = [f"0.0.0.0:{os.environ.get('PORT', '5000')}"]
-    
-    asyncio.run(serve(app, config))
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
