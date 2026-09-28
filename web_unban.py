@@ -244,18 +244,10 @@ async def unban_process(channel_input: str):
             try:
                 unban_progress['current_user'] = f"{user.first_name or 'User'} (ID: {user.id})"
                 
+                # Simply unban by removing all restrictions
                 await client.edit_permissions(
                     channel,
-                    user,
-                    view_messages=True,
-                    send_messages=True,
-                    send_media=True,
-                    send_stickers=True,
-                    send_gifs=True,
-                    send_games=True,
-                    send_inline=True,
-                    embed_links=True,
-                    send_polls=True
+                    user
                 )
                 
                 unban_progress['unbanned'] += 1
