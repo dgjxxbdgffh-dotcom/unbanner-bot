@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: telegram-unban-tool
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python web_unban.py
+    envVars:
+      - key: API_ID
+        value: 33325009
+      - key: API_HASH
+        value: 3ef83055e590c94d0c4572dc094771f4
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: 3.11.0
